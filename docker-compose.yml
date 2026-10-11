@@ -1,0 +1,43 @@
+version: '3.8'
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: backend
+    container_name: orion-api
+    ports:
+      - "8000:8000"
+    environment:
+      - ORION_ENV=production
+      - ORION_API_HOST=0.0.0.0
+      - ORION_API_PORT=8000
+      - ORION_DATABASE_URL=sqlite+aiosqlite:////app/data/orion.db
+      - ORION_EXECUTION_MODE=paper
+      - ORION_LIVE_TRADING_ENABLED=false
+    volumes:
+      - orion-data:/app/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: frontend
+    container_name: orion-web
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:8000
+    depends_on:
+      - api
+    restart: unless-stopped
+
+volumes:
+  orion-data:
