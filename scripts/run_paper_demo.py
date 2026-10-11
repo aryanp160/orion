@@ -1,9 +1,11 @@
 import asyncio
 from decimal import Decimal
-from apps.api.database import init_db, AsyncSessionLocal
-from packages.domain.enums import VenueId, OrderSide, OrderType
+
+from apps.api.database import AsyncSessionLocal, init_db
+from packages.domain.enums import OrderSide, OrderType, VenueId
 from packages.domain.models import OrderRequest
 from services.execution.paper_trading import paper_trading_engine
+
 
 async def main():
     print("=== ORION Execution Intelligence: Paper Trading Demo ===")
@@ -34,7 +36,7 @@ async def main():
 
         # Account check
         acc_status = await paper_trading_engine.get_account_summary(session)
-        print(f"\n3. Portfolio Post-Trade:")
+        print("\n3. Portfolio Post-Trade:")
         print(f"   Positions: {len(acc_status.positions)}")
         for pos in acc_status.positions:
             print(f"   - {pos.side.value} {pos.quantity:.4f} {pos.symbol} @ ${pos.entry_price:,.2f} | Unrealized PnL: ${pos.unrealized_pnl:,.2f}")
@@ -57,7 +59,7 @@ async def main():
         print(f"   Exit VWAP: ${report_close.avg_fill_price:,.2f}")
 
         final_acc = await paper_trading_engine.get_account_summary(session)
-        print(f"\n5. Final Realized Performance:")
+        print("\n5. Final Realized Performance:")
         print(f"   Realized PnL: ${final_acc.realized_pnl_usd:,.2f}")
         print(f"   Final Equity: ${final_acc.equity_usd:,.2f}")
         print("=== Paper Trading Demo Completed Successfully ===")

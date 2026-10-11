@@ -1,15 +1,18 @@
 from datetime import datetime, timezone
 from typing import List, Optional
+
 from sqlalchemy import (
-    String,
-    Float,
-    Integer,
     DateTime,
-    Text,
+    Float,
     ForeignKey,
+    Integer,
+    String,
+    Text,
 )
 from sqlalchemy.orm import Mapped, mapped_column, relationship
+
 from apps.api.database import Base
+
 
 def utc_now() -> datetime:
     return datetime.now(timezone.utc)

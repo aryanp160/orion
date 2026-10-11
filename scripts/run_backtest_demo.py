@@ -1,6 +1,8 @@
 import asyncio
-from apps.api.database import init_db, AsyncSessionLocal
+
+from apps.api.database import AsyncSessionLocal, init_db
 from services.research.backtester import backtest_engine
+
 
 async def main():
     print("=== ORION Execution Intelligence: Backtest & Attribution Demo ===")

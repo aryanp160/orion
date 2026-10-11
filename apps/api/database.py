@@ -1,5 +1,5 @@
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
-from sqlalchemy.orm import declarative_base
+from sqlalchemy.orm import DeclarativeBase
 
 from apps.api.config import settings
 
@@ -15,11 +15,8 @@ AsyncSessionLocal = async_sessionmaker(
     bind=engine, class_=AsyncSession, expire_on_commit=False, autocommit=False, autoflush=False
 )
 
-from sqlalchemy.orm import DeclarativeBase
-
 class Base(DeclarativeBase):
     pass
-
 
 async def get_db():
     async with AsyncSessionLocal() as session:
@@ -27,7 +24,6 @@ async def get_db():
             yield session
         finally:
             await session.close()
-
 
 async def init_db():
     async with engine.begin() as conn:
