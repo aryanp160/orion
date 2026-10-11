@@ -1,21 +1,25 @@
-from decimal import Decimal
-from typing import List, Optional, Dict, Any
 from datetime import datetime, timezone
-from pydantic import BaseModel, Field, ConfigDict
+from decimal import Decimal
+from typing import Any, Dict, List, Optional
+
+from pydantic import BaseModel, ConfigDict, Field
+
 from packages.domain.enums import (
-    VenueId,
-    VenueType,
+    ExecutionPreference,
+    LiquidityRole,
     NetworkId,
     OrderSide,
-    OrderType,
-    ExecutionPreference,
-    RiskOutcome,
     OrderStatus,
-    LiquidityRole,
+    OrderType,
+    RiskOutcome,
+    VenueId,
+    VenueType,
 )
+
 
 def utc_now() -> datetime:
     return datetime.now(timezone.utc)
+
 
 # 1. Venue & Capabilities
 class VenueCapabilities(BaseModel):
@@ -34,6 +38,7 @@ class VenueCapabilities(BaseModel):
     fee_tier_configurable: bool
     description: str
 
+
 class Venue(BaseModel):
     id: VenueId
     name: str
@@ -42,6 +47,7 @@ class Venue(BaseModel):
     base_url: str
     capabilities: VenueCapabilities
     is_active: bool = True
+
 
 # 2. Market / Instrument
 class Instrument(BaseModel):
@@ -57,16 +63,19 @@ class Instrument(BaseModel):
     maker_fee_bps: Decimal = Field(default=Decimal("1.0"))
     taker_fee_bps: Decimal = Field(default=Decimal("3.5"))
 
+
 class Market(BaseModel):
     symbol: str
     supported_venues: List[VenueId]
     instruments: Dict[VenueId, Instrument]
+
 
 # 3. OrderBook & Levels
 class OrderBookLevel(BaseModel):
     price: Decimal
     size: Decimal
     order_count: Optional[int] = None
+
 
 class OrderBook(BaseModel):
     venue_id: VenueId
@@ -100,6 +109,7 @@ class OrderBook(BaseModel):
                 return ((self.best_ask - self.best_bid) / mid) * Decimal("10000")
         return None
 
+
 # 4. Trade
 class Trade(BaseModel):
     trade_id: str
@@ -109,6 +119,7 @@ class Trade(BaseModel):
     size: Decimal
     side: OrderSide
     timestamp: datetime = Field(default_factory=utc_now)
+
 
 # 5. FundingObservation
 class FundingObservation(BaseModel):
@@ -120,6 +131,7 @@ class FundingObservation(BaseModel):
     next_funding_time: Optional[datetime] = None
     timestamp: datetime = Field(default_factory=utc_now)
 
+
 # 6. OpenInterestObservation
 class OpenInterestObservation(BaseModel):
     venue_id: VenueId
@@ -127,6 +139,7 @@ class OpenInterestObservation(BaseModel):
     open_interest_notional: Decimal
     open_interest_contracts: Optional[Decimal] = None
     timestamp: datetime = Field(default_factory=utc_now)
+
 
 # 7. MarkPrice & IndexPrice
 class MarkPrice(BaseModel):
@@ -137,11 +150,13 @@ class MarkPrice(BaseModel):
     basis_bps: Optional[Decimal] = None
     timestamp: datetime = Field(default_factory=utc_now)
 
+
 class IndexPrice(BaseModel):
     symbol: str
     price: Decimal
     sources: List[str] = Field(default_factory=list)
     timestamp: datetime = Field(default_factory=utc_now)
+
 
 # 8. MarketDataHealth
 class MarketDataHealth(BaseModel):
@@ -154,6 +169,7 @@ class MarketDataHealth(BaseModel):
     sequence_gaps: int = 0
     status_message: str = "HEALTHY"
 
+
 # 9. GasObservation
 class GasObservation(BaseModel):
     network: NetworkId
@@ -163,6 +179,7 @@ class GasObservation(BaseModel):
     l1_rollup_fee_usd: Decimal = Field(default=Decimal("0.0"))
     estimated_tx_cost_usd: Decimal
     timestamp: datetime = Field(default_factory=utc_now)
+
 
 # 10. OrderRequest
 class OrderRequest(BaseModel):
@@ -176,6 +193,7 @@ class OrderRequest(BaseModel):
     holding_horizon_hours: Decimal = Field(default=Decimal("24.0"))
     limit_price: Optional[Decimal] = None
     client_order_id: Optional[str] = None
+
 
 # 11. CostComponentAttribution
 class CostBreakdown(BaseModel):
@@ -196,6 +214,7 @@ class CostBreakdown(BaseModel):
     total_cost_bps: Decimal
     total_cost_usd: Decimal
 
+
 # 12. CandidateRouteQuote
 class CandidateRoute(BaseModel):
     venue_id: VenueId
@@ -208,6 +227,7 @@ class CandidateRoute(BaseModel):
     ineligibility_reason: Optional[str] = None
     data_freshness_sec: float = 0.0
     liquidity_available_usd: Decimal = Field(default=Decimal("0.0"))
+
 
 # 13. RouteQuote & RouteDecision
 class RouteQuote(BaseModel):
@@ -226,6 +246,7 @@ class RouteQuote(BaseModel):
     expires_at: datetime
     explanation: Dict[str, Any]
 
+
 class RouteDecision(BaseModel):
     decision_id: str
     quote_id: str
@@ -236,6 +257,7 @@ class RouteDecision(BaseModel):
     explanation_summary: str
     timestamp: datetime = Field(default_factory=utc_now)
 
+
 # 14. OrderPlan
 class OrderSlice(BaseModel):
     slice_id: str
@@ -245,11 +267,13 @@ class OrderSlice(BaseModel):
     target_price: Decimal
     max_slippage_bps: Decimal
 
+
 class OrderPlan(BaseModel):
     plan_id: str
     order_request: OrderRequest
     slices: List[OrderSlice]
     created_at: datetime = Field(default_factory=utc_now)
+
 
 # 15. ExecutionReport & Fill
 class Fill(BaseModel):
@@ -266,6 +290,7 @@ class Fill(BaseModel):
     role: LiquidityRole = LiquidityRole.TAKER
     timestamp: datetime = Field(default_factory=utc_now)
     simulated: bool = True
+
 
 class ExecutionReport(BaseModel):
     report_id: str
@@ -288,6 +313,7 @@ class ExecutionReport(BaseModel):
     created_at: datetime = Field(default_factory=utc_now)
     updated_at: datetime = Field(default_factory=utc_now)
 
+
 # 16. FeeRecord
 class FeeRecord(BaseModel):
     venue_id: VenueId
@@ -295,6 +321,7 @@ class FeeRecord(BaseModel):
     taker_fee_bps: Decimal
     tier_name: str = "STANDARD"
     protocol_overhead_usd: Decimal = Field(default=Decimal("0.0"))
+
 
 # 17. PaperPosition & Account
 class PaperPosition(BaseModel):
@@ -312,6 +339,7 @@ class PaperPosition(BaseModel):
     liquidation_price: Optional[Decimal] = None
     updated_at: datetime = Field(default_factory=utc_now)
 
+
 class PaperAccount(BaseModel):
     account_id: str = "PAPER_DEFAULT"
     equity_usd: Decimal
@@ -325,6 +353,7 @@ class PaperAccount(BaseModel):
     positions: List[PaperPosition] = Field(default_factory=list)
     updated_at: datetime = Field(default_factory=utc_now)
 
+
 # 18. RiskAssessment
 class RiskAssessment(BaseModel):
     outcome: RiskOutcome
@@ -334,6 +363,7 @@ class RiskAssessment(BaseModel):
     checks: Dict[str, Dict[str, Any]] = Field(default_factory=dict)
     rejection_reason: Optional[str] = None
     timestamp: datetime = Field(default_factory=utc_now)
+
 
 # 19. BacktestRun & Execution Attribution
 class BacktestRun(BaseModel):
@@ -354,6 +384,7 @@ class BacktestRun(BaseModel):
     cost_percentiles: Dict[str, Decimal] = Field(default_factory=dict)
     summary_metrics: Dict[str, Any] = Field(default_factory=dict)
     created_at: datetime = Field(default_factory=utc_now)
+
 
 # 20. AuditEvent
 class AuditEvent(BaseModel):
